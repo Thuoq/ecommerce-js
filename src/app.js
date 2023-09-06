@@ -19,7 +19,22 @@ app.use(bodyParser.json())
 // INIT DB
 import './dbs/init.mongo-db.js'
 
-app.use(indexRouter)
 // INIT ROUTER
+app.use(indexRouter)
 
-// HANDLING ROUTER
+// HANDLING ERROR WHEN NOT FOUND ROUTE
+app.use((req, res, next) => {
+  const error = new Error('Not found')
+  error.status = 404
+  next(error)
+})
+
+// CATCH ERROR GLOBAL
+app.use((error, req, res, next) => {
+  const status = error.status || 500
+  return res.status(status).json({
+    status: 'error',
+    code: status,
+    message: error.message || 'Internal server'
+  })
+})
