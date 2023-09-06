@@ -14,6 +14,10 @@ const keyTokenSchema = new Schema(
       type: String,
       required: true
     },
+    privateKey: {
+      type: String,
+      required: true
+    },
     refreshToken: {
       // detect hacker get token
       type: Array,

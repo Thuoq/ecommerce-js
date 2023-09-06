@@ -1,11 +1,10 @@
 import { shopModel } from '../models/index.js'
 import * as bcrypt from 'bcrypt'
 import { ROLE_SHOP, SALT_PASSWORD } from '../constants/index.js'
-import * as crypto from 'crypto'
+import crypto from 'crypto'
 import KeyTokenService from './keyToken.service.js'
 import { createTokenPair } from '../auth/authUtils.js'
 import { getInfoData } from '../utils/index.js'
-
 class AccessService {
   static async signUp({ name, email, password }) {
     try {
@@ -33,31 +32,22 @@ class AccessService {
       })
       if (newShop) {
         // created privateKey, publicKey
-        const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
-          modulusLength: 4096,
-          publicKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem'
-          },
-          privateKeyEncoding: {
-            type: 'pkcs1',
-            format: 'pem'
-          }
-        })
+        const privateKey = crypto.randomBytes(64).toString('hex')
+        const publicKey = crypto.randomBytes(64).toString('hex')
         // save collection keyStore
-
-        const publicKeyString = await KeyTokenService.createKeyToken({
+        console.log(privateKey, publicKey)
+        const keyStore = await KeyTokenService.createKeyToken({
           userId: newShop._id,
-          publicKey
+          publicKey,
+          privateKey
         })
 
-        if (!publicKeyString) {
+        if (!keyStore) {
           return {
             code: 'xxxx',
             message: 'public Key String errror'
           }
         }
-        const publicKeyObject = crypto.createPublicKey(publicKeyString)
 
         // create token pair
         const tokens = await createTokenPair(
@@ -65,7 +55,7 @@ class AccessService {
             userId: newShop._id,
             email: newShop.email
           },
-          { privateKey, publicKey: publicKeyObject }
+          { privateKey, publicKey }
         )
         return {
           code: 201,
