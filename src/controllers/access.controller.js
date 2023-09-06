@@ -1,9 +1,12 @@
 import AccessService from '../services/access.service.js'
+import { CREATED } from '../core/index.js'
 
 class AccessController {
   async signUp(req, res) {
-    const resx = await AccessService.signUp(req.body)
-    return res.status(201).json(resx)
+    new CREATED({
+      message: 'Dang ky thanh cong',
+      metadata: await AccessService.signUp(req.body)
+    }).send(res)
   }
 }
 
