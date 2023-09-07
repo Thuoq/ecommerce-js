@@ -9,6 +9,7 @@ import {
   ForbiddenError
 } from '../core/index.js'
 import ShopService from './shop.service.js'
+import { createTokenPair } from '../auth/authUtils.js'
 class AccessService {
   /**
    *  1 - Check mail in dbs
@@ -77,11 +78,15 @@ class AccessService {
    * 1 check refresh token had used
    *
    * */
-  static async handleRefreshToken({ refreshToken, user }) {
-    const tokens = await KeyTokenService.generateTokens({
-      _id: user._id,
-      email: user.email
-    })
+  static async handleRefreshToken({ keyStore, user, refreshToken }) {
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      await KeyTokenService.removeByUserId(user._id)
+      throw new ForbiddenError('Something happen !! please login again')
+    }
+    const tokens = await createTokenPair(
+      { email: user.email, userId: user._id },
+      { privateKey: keyStore.privateKey, publicKey: keyStore.publicKey }
+    )
 
     await KeyTokenService.updateRefreshTokenByUserId(
       user._id,

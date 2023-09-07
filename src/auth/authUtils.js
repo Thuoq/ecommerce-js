@@ -3,7 +3,6 @@ import {
   asyncHandler,
   AuthFailureError,
   BadRequestError,
-  ForbiddenError,
   HEADER,
   NotFoundError
 } from '../core/index.js'
@@ -76,15 +75,11 @@ export const checkRefreshToken = asyncHandler(async (req, res, next) => {
   const refreshToken = req.headers[HEADER.REFRESH_TOKEN]
   if (!refreshToken) throw new AuthFailureError('Refresh token not found')
 
-  if (keyStore.refreshTokensUsed.includes(refreshToken)) {
-    await KeyTokenService.removeByUserId(userId)
-    throw new ForbiddenError('Something happen !! please login again')
-  }
-
   try {
     const decodeUser = jwt.verify(refreshToken, keyStore.privateKey)
     if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid user')
     req.refreshToken = refreshToken
+    req.keyStore = keyStore
     req.user = keyStore.user
     return next()
   } catch (e) {

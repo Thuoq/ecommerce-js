@@ -22,7 +22,6 @@ class AccessController {
     }).send(res)
   }
   async refreshToken(req, res) {
-    console.log('::: RUN IN controller')
     new SuccessResponse({
       message: 'Get Refresh token successfully',
       metadata: await AccessService.handleRefreshToken(req)
