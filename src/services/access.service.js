@@ -64,6 +64,12 @@ class AccessService {
     }
     return null
   }
+
+  static async logOut({ keyStore }) {
+    const delKey = await KeyTokenService.removeById(keyStore._id)
+    console.log(delKey)
+    return delKey
+  }
 }
 
 export default AccessService

@@ -2,6 +2,7 @@ import { keyTokenModel } from '../models/index.js'
 import crypto from 'crypto'
 import { createTokenPair } from '../auth/authUtils.js'
 import { BadRequestError } from '../core/index.js'
+import { Schema } from 'mongoose'
 
 export default class KeyTokenService {
   static async createKeyToken({ userId, publicKey, privateKey, refreshToken }) {
@@ -43,5 +44,12 @@ export default class KeyTokenService {
       throw new BadRequestError('Public key string error')
     }
     return tokens
+  }
+
+  static findByUserId(userId) {
+    return keyTokenModel.findOne({ user: userId }).lean()
+  }
+  static removeById(id) {
+    return keyTokenModel.findByIdAndRemove(id)
   }
 }
