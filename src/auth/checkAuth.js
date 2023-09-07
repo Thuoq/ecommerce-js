@@ -1,5 +1,5 @@
 import { HEADER } from '../core/index.js'
-import { ApiKeyService } from '../services/apiKey.service.js'
+import ApiKeyService from '../services/apiKey.service.js'
 
 export const checkApiKey = async (req, res, next) => {
   try {

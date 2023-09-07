@@ -33,3 +33,12 @@ export class NotFoundError extends ErrorResponse {
     super(message, statusCode)
   }
 }
+
+export class AuthFailureError extends ErrorResponse {
+  constructor(
+    message = getReasonPhrase(StatusCodes.UNAUTHORIZED),
+    statusCode = StatusCodes.UNAUTHORIZED
+  ) {
+    super(message, statusCode)
+  }
+}

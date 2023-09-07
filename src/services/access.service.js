@@ -1,12 +1,37 @@
 import { shopModel } from '../models/index.js'
 import * as bcrypt from 'bcrypt'
 import { ROLE_SHOP, SALT_PASSWORD } from '../constants/index.js'
-import crypto from 'crypto'
 import KeyTokenService from './keyToken.service.js'
-import { createTokenPair } from '../auth/authUtils.js'
 import { getInfoData } from '../utils/index.js'
-import { BadRequestError } from '../core/index.js'
+import { AuthFailureError, BadRequestError } from '../core/index.js'
+import ShopService from './shop.service.js'
 class AccessService {
+  /**
+   *  1 - Check mail in dbs
+   *  2 - match password
+   *  3 - create AT vs RT and save
+   *  4 - generate tokens
+   *  5 - get data return login
+   * */
+  static async login({ email, password, refreshToken = null }) {
+    const foundShop = await ShopService.findByEmail({ email })
+
+    if (!foundShop) throw new BadRequestError('ERROR: Wrong email or password')
+
+    const match = await bcrypt.compare(password, foundShop.password)
+
+    if (!match) throw new AuthFailureError('auth failure')
+
+    const tokens = await KeyTokenService.generateTokens(foundShop)
+
+    return {
+      shop: getInfoData({
+        fields: ['_id', 'name', 'email'],
+        object: foundShop
+      }),
+      tokens
+    }
+  }
   static async signUp({ name, email, password }) {
     // Step 1: check email exits ?
     const holderShop = await shopModel
@@ -15,9 +40,7 @@ class AccessService {
       })
       .lean()
 
-    if (holderShop) {
-      throw new BadRequestError('Error: Shop already register')
-    }
+    if (holderShop) throw new BadRequestError('Error: Shop already register')
 
     const passwordHash = await bcrypt.hash(password, SALT_PASSWORD)
 
@@ -27,30 +50,10 @@ class AccessService {
       email,
       roles: [ROLE_SHOP.SHOP]
     })
+
     if (newShop) {
-      // created privateKey, publicKey
-      const privateKey = crypto.randomBytes(64).toString('hex')
-      const publicKey = crypto.randomBytes(64).toString('hex')
-      // save collection keyStore
+      const tokens = await KeyTokenService.generateTokens(newShop)
 
-      const keyStore = await KeyTokenService.createKeyToken({
-        userId: newShop._id,
-        publicKey,
-        privateKey
-      })
-
-      if (!keyStore) {
-        throw new BadRequestError('Public key string error')
-      }
-
-      // create token pair
-      const tokens = await createTokenPair(
-        {
-          userId: newShop._id,
-          email: newShop.email
-        },
-        { privateKey, publicKey }
-      )
       return {
         shop: getInfoData({
           fields: ['_id', 'name', 'email'],
