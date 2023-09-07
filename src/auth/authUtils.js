@@ -3,6 +3,7 @@ import {
   asyncHandler,
   AuthFailureError,
   BadRequestError,
+  ForbiddenError,
   HEADER,
   NotFoundError
 } from '../core/index.js'
@@ -56,6 +57,35 @@ export const authentication = asyncHandler(async (req, res, next) => {
     const decodeUser = jwt.verify(accessToken, keyStore.publicKey)
     if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid user')
     req.keyStore = keyStore
+    req.user = keyStore.user
+    return next()
+  } catch (e) {
+    throw e
+  }
+})
+
+export const checkRefreshToken = asyncHandler(async (req, res, next) => {
+  const userId = req.headers[HEADER.CLIENT_ID]
+  if (!userId) throw new BadRequestError('Invalid request')
+
+  // 2
+
+  const keyStore = await KeyTokenService.findByUserId(userId)
+  if (!keyStore) throw new NotFoundError('User do not login')
+
+  const refreshToken = req.headers[HEADER.REFRESH_TOKEN]
+  if (!refreshToken) throw new AuthFailureError('Refresh token not found')
+
+  if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+    await KeyTokenService.removeByUserId(userId)
+    throw new ForbiddenError('Something happen !! please login again')
+  }
+
+  try {
+    const decodeUser = jwt.verify(refreshToken, keyStore.privateKey)
+    if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid user')
+    req.refreshToken = refreshToken
+    req.user = keyStore.user
     return next()
   } catch (e) {
     throw e

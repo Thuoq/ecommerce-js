@@ -21,6 +21,13 @@ class AccessController {
       metadata: await AccessService.logOut(req)
     }).send(res)
   }
+  async refreshToken(req, res) {
+    console.log('::: RUN IN controller')
+    new SuccessResponse({
+      message: 'Get Refresh token successfully',
+      metadata: await AccessService.handleRefreshToken(req)
+    }).send(res)
+  }
 }
 
 export default new AccessController()

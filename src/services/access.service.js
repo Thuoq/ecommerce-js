@@ -3,7 +3,11 @@ import * as bcrypt from 'bcrypt'
 import { ROLE_SHOP, SALT_PASSWORD } from '../constants/index.js'
 import KeyTokenService from './keyToken.service.js'
 import { getInfoData } from '../utils/index.js'
-import { AuthFailureError, BadRequestError } from '../core/index.js'
+import {
+  AuthFailureError,
+  BadRequestError,
+  ForbiddenError
+} from '../core/index.js'
 import ShopService from './shop.service.js'
 class AccessService {
   /**
@@ -65,10 +69,27 @@ class AccessService {
     return null
   }
 
-  static async logOut({ keyStore }) {
-    const delKey = await KeyTokenService.removeById(keyStore._id)
-    console.log(delKey)
-    return delKey
+  static logOut({ keyStore }) {
+    return KeyTokenService.removeById(keyStore._id)
+  }
+
+  /** Refresh Token and check token had used
+   * 1 check refresh token had used
+   *
+   * */
+  static async handleRefreshToken({ refreshToken, user }) {
+    const tokens = await KeyTokenService.generateTokens({
+      _id: user._id,
+      email: user.email
+    })
+
+    await KeyTokenService.updateRefreshTokenByUserId(
+      user._id,
+      tokens,
+      refreshToken
+    )
+
+    return tokens
   }
 }
 

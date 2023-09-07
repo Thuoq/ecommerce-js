@@ -47,9 +47,31 @@ export default class KeyTokenService {
   }
 
   static findByUserId(userId) {
-    return keyTokenModel.findOne({ user: userId }).lean()
+    return keyTokenModel
+      .findOne({ user: userId })
+      .populate('user', 'name _id')
+      .lean()
   }
   static removeById(id) {
     return keyTokenModel.findByIdAndRemove(id)
+  }
+  static removeByUserId(userId) {
+    return keyTokenModel.findOneAndDelete({ user: userId })
+  }
+
+  static updateRefreshTokenByUserId(userId, newTokens, oldRefreshToken) {
+    return keyTokenModel.findOneAndUpdate(
+      {
+        user: userId
+      },
+      {
+        $set: {
+          refreshToken: newTokens.refreshToken
+        },
+        $addToSet: {
+          refreshTokensUsed: oldRefreshToken
+        }
+      }
+    )
   }
 }
