@@ -43,7 +43,7 @@ export default class ProductFactoryService {
   }
 
   static async unPublishProductByShop({ product_id, product_shop }) {
-    const publishShopUpdated = await ProductRepo.publishProductByShop({
+    const publishShopUpdated = await ProductRepo.unPublishProductByShop({
       product_id,
       product_shop
     })
