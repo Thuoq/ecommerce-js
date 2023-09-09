@@ -1,6 +1,7 @@
 import { clothingModel, furnitureModel, productModel } from '../models/index.js'
 import { BadRequestError, PRODUCT_TYPE } from '../core/index.js'
 import { electronicModel } from '../models/electronic.model.js'
+import ProductRepo from '../models/repositories/product.repo.js'
 
 export default class ProductFactoryService {
 
@@ -19,6 +20,40 @@ export default class ProductFactoryService {
     const productClass = ProductFactoryService.productRegistry[type]
     if (!productClass) throw new BadRequestError(`Invalid product types ${type}`)
     return new productClass(payload).createProduct()
+  }
+
+  static findAllDrafts4Shop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { product_shop, isDraft: true }
+    return ProductRepo.findAllDrafts4Shop({ query, limit, skip })
+  }
+
+  static findAllPublish4Shop({ product_shop, limit = 50, skip = 0 }) {
+    const query = { product_shop, isPublish: true }
+    return ProductRepo.findAllPublish4Shop({ query, limit, skip })
+  }
+
+  static async publishProductByShop({ product_id, product_shop }) {
+    const publishShopUpdated = await ProductRepo.publishProductByShop({
+      product_id,
+      product_shop
+    })
+
+    if (!publishShopUpdated) throw new BadRequestError('Do not updated')
+    return publishShopUpdated
+  }
+
+  static async unPublishProductByShop({ product_id, product_shop }) {
+    const publishShopUpdated = await ProductRepo.publishProductByShop({
+      product_id,
+      product_shop
+    })
+
+    if (!publishShopUpdated) throw new BadRequestError('Do not updated')
+    return publishShopUpdated
+  }
+
+  static getListSearchProductByUser({ keySearch }) {
+    return ProductRepo.searchProductByUser({ keySearch })
   }
 }
 

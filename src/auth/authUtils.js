@@ -1,12 +1,7 @@
 import jwt from 'jsonwebtoken'
-import {
-  asyncHandler,
-  AuthFailureError,
-  BadRequestError,
-  HEADER,
-  NotFoundError
-} from '../core/index.js'
+import { asyncHandler, AuthFailureError, BadRequestError, HEADER, NotFoundError } from '../core/index.js'
 import KeyTokenService from '../services/keyToken.service.js'
+
 export const createTokenPair = async (payload, { publicKey, privateKey }) => {
   try {
     // accessToken
