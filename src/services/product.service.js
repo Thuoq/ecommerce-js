@@ -2,6 +2,7 @@ import { clothingModel, furnitureModel, productModel } from '../models/index.js'
 import { BadRequestError, PRODUCT_TYPE } from '../core/index.js'
 import { electronicModel } from '../models/electronic.model.js'
 import ProductRepo from '../models/repositories/product.repo.js'
+import InventoryRepo from '../models/repositories/inventory.repo.js'
 
 export default class ProductFactoryService {
 
@@ -94,6 +95,12 @@ class Product {
     })
 
     if (!newProduct) throw new BadRequestError('Create new Product')
+
+    await InventoryRepo.insertInventory({
+      shopId: this.product_shop,
+      productId: newProduct._id,
+      stock: this.product_quantity
+    })
     return newProduct
   }
 }

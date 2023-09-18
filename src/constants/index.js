@@ -7,3 +7,7 @@ export const ROLE_SHOP = {
   EDITOR: 'EDITOR',
   ADMIN: 'ADMIN'
 }
+export const DISCOUNT_TYPE = {
+  FIXED_AMOUNT: 'FIXED_AMOUNT',
+  PERCENTAGE: 'PERCENTAGE'
+}

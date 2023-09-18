@@ -54,7 +54,7 @@ export const authentication = asyncHandler(async (req, res, next) => {
     req.user = keyStore.user
     return next()
   } catch (e) {
-    throw e
+    throw new BadRequestError('Error')
   }
 })
 
@@ -78,6 +78,6 @@ export const checkRefreshToken = asyncHandler(async (req, res, next) => {
     req.user = keyStore.user
     return next()
   } catch (e) {
-    throw e
+    throw new BadRequestError(e.message || 'Error')
   }
 })
